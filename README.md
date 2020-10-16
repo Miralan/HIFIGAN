@@ -17,7 +17,7 @@ This project is mainly modified on the basis of (https://github.com/yanggeng1995
 >
 > Edit configuration in utils/audio.py
 >
-> Process data: python process.py
+> Process data:  python process.py
 
 ## Pretrain & Train
 > python pretrain.py 
