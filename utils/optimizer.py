@@ -13,7 +13,7 @@ class Optimizer(object):
                  decay_learning_rate=0.999):
 
         self.optimizer = optimizer
-        self.init_lr = init_lr
+        self.lr = init_lr
         self.epoch = epoch
         self.decay_learning_rate = decay_learning_rate
 
@@ -34,9 +34,8 @@ class Optimizer(object):
 
     def update_learning_rate(self, epoch):
 
-        lr = self.init_lr * self.get_lr_scale(epoch)
-        lr = np.maximum(1e-6, lr)
-        self.lr = lr
+        self.lr = self.lr * self.get_lr_scale(epoch)
+        self.lr = np.maximum(1e-6, self.lr)
 
         for param_group in self.optimizer.param_groups:
             param_group['lr'] = self.lr
