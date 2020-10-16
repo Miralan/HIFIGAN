@@ -9,6 +9,7 @@ from utils.audio import hop_length, Audio2Mel
 from utils.optimizer import Optimizer
 from utils.adam import AdamW
 from utils.dataset import CustomerDataset, CustomerCollate
+from utils.loss import MultiResolutionSTFTLoss
 from torch.utils.data import DataLoader
 from models.generator import Generator
 from models.discriminator import Discriminator
@@ -56,6 +57,7 @@ def train(args):
                                    global_epoch, args.decay_learning_rate)
     mse_loss = nn.MSELoss().to(device)
     l1_loss = nn.L1Loss().to(device)
+    stft_criterion = MultiResolutionSTFTLoss()
 
     for epoch in range(args.epochs):
         collate = CustomerCollate(
@@ -139,12 +141,10 @@ def train(args):
             for (i, loss) in enumerate(fm_loss_list):
                     losses["fm_loss_{}".format(str(i))] = loss.item()
 
-            # Mel-Spectrogram Loss
-            real_score = cal_mel(samples)
-            fake_score = cal_mel(g_outputs)
-            mel_loss = l1_loss(real_score, fake_score)
-
-            g_loss = adv_loss + 2 * fm_loss + 45 * mel_loss
+            # STFT Loss
+            sc_loss, mag_loss = stft_criterion(g_outputs.squeeze(1), samples.squeeze(1))
+            mel_loss = sc_loss + mag_loss
+            g_loss = adv_loss + 2 * fm_loss + 15 * mel_loss
             custom_g_optimizer.zero_grad()
             g_loss.backward()
             nn.utils.clip_grad_norm_(g_parameters, max_norm=0.5)
