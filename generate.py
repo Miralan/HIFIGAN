@@ -46,7 +46,7 @@ def synthesis(args):
 
     device = torch.device("cuda" if args.use_cuda else "cpu")
     model.to(device)
-    # model.remove_weight_norm()
+    model.remove_weight_norm()
 
     output_dir = "samples"
     target_dir = os.path.join(output_dir, "target")

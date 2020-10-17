@@ -28,7 +28,6 @@ def train(args):
 
     device = torch.device("cuda:0")
     generator, discriminator = create_model(args, Generator, Discriminator, hop_length)
-    cal_mel = Audio2Mel()
 
     if args.print_network:
         print(generator)
@@ -42,7 +41,6 @@ def train(args):
 
     generator.to(device)
     discriminator.to(device)
-    cal_mel.to(device)
 
     global_step = 0
     global_epoch = 0
@@ -95,7 +93,7 @@ def train(args):
 
             time_used = time.time() - start
             
-            logging.info(f"Epoch: {global_epoch} Step: {global_step} --g_loss: {g_loss:.3f} --Time: {time_used:.2f}")
+            logging.info(f"Epoch: {global_epoch} Step: {global_step} --g_loss: {g_loss:.3f} --g_lr: {custom_g_optimizer.lr} --Time: {time_used:.2f}")
             # Save checkpoints
             if global_step % args.checkpoint_step == 0:
                 save_checkpoint(args, generator, discriminator,
@@ -122,13 +120,13 @@ def main():
     parser.add_argument('--checkpoint_step', type=int, default=5000)
     parser.add_argument('--use_cuda', type=_str_to_bool, default=True)
     parser.add_argument('--print_network', type=_str_to_bool, default=False)
-    parser.add_argument('--g_learning_rate', type=float, default=0.0002)
+    parser.add_argument('--g_learning_rate', type=float, default=0.0008)
     parser.add_argument('--d_learning_rate', type=float, default=0.0002)
     parser.add_argument('--decay_learning_rate', type=float, default=0.999)
     parser.add_argument('--adamw_beta', type=float, default=(0.8, 0.99))
     parser.add_argument('--adamw_weight_decay', type=float, default=0.01)
     parser.add_argument('--local_condition_dim', type=int, default=80)
-    parser.add_argument('--batch_size', type=int, default=2)
+    parser.add_argument('--batch_size', type=int, default=20)
     parser.add_argument('--condition_window', type=int, default=100)
     parser.add_argument('--logfile', type=str, default="txt")
 

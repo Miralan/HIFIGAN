@@ -114,7 +114,6 @@ def train(args):
 
             ## Train generator
             fake_scores1, fake_scores2 = discriminator(g_outputs)
-            real_scores1, real_scores2 = discriminator(samples)
 
             #Adversarial loss
             adv_loss_list = []
@@ -132,9 +131,9 @@ def train(args):
             fm_loss_list = []
 
             for (real_score, fake_score) in zip(real_scores1, fake_scores1):
-                fm_loss_list.append(l1_loss(real_score, fake_score))
+                fm_loss_list.append(l1_loss(real_score.detach(), fake_score))
             for (real_score, fake_score) in zip(real_scores2, fake_scores2):
-                fm_loss_list.append(l1_loss(real_score, fake_score))
+                fm_loss_list.append(l1_loss(real_score.detach(), fake_score))
 
             fm_loss = sum(fm_loss_list) / len(fm_loss_list)
 
@@ -157,7 +156,7 @@ def train(args):
             
             time_used = time.time() - start
             
-            logging.info(f"Epoch: {global_epoch} Step: {global_step} --d_loss: {d_loss:.3f} --d_real_loss: {d_loss_real:.3f} --d_faker_loss: {d_loss_fake:.3f} --g_loss: {g_loss:.3f} --adv_loss: {adv_loss:.3f} --fm_loss: {fm_loss:.3f}  --mel_loss: {mel_loss:.3f} --Time: {time_used:.2f}")
+            logging.info(f"Epoch: {global_epoch} Step: {global_step} --d_loss: {d_loss:.3f} --d_real_loss: {d_loss_real:.3f} --d_faker_loss: {d_loss_fake:.3f} --g_loss: {g_loss:.3f} --adv_loss: {adv_loss:.3f} --fm_loss: {fm_loss:.3f}  --mel_loss: {mel_loss:.3f} --g_lr: {custom_g_optimizer.lr} --d_lr: {custom_d_optimizer.lr} --Time: {time_used:.2f}")
             # Save checkpoints
             if global_step % args.checkpoint_step == 0:
                 save_checkpoint(args, generator, discriminator,
@@ -184,13 +183,13 @@ def main():
     parser.add_argument('--checkpoint_step', type=int, default=5000)
     parser.add_argument('--use_cuda', type=_str_to_bool, default=True)
     parser.add_argument('--print_network', type=_str_to_bool, default=False)
-    parser.add_argument('--g_learning_rate', type=float, default=0.0002)
+    parser.add_argument('--g_learning_rate', type=float, default=0.0004)
     parser.add_argument('--d_learning_rate', type=float, default=0.0002)
     parser.add_argument('--decay_learning_rate', type=float, default=0.999)
     parser.add_argument('--adamw_beta', type=float, default=(0.8, 0.99))
     parser.add_argument('--adamw_weight_decay', type=float, default=0.01)
     parser.add_argument('--local_condition_dim', type=int, default=80)
-    parser.add_argument('--batch_size', type=int, default=2)
+    parser.add_argument('--batch_size', type=int, default=12)
     parser.add_argument('--condition_window', type=int, default=100)
     parser.add_argument('--logfile', type=str, default="txt")
 
