@@ -14,8 +14,8 @@ class ResBlock(nn.Module):
             *[
                 nn.Sequential(
                     nn.LeakyReLU(0.2),
-                    nn.Conv1d(in_channels, in_channels, kernel_size, 1, dilation=dialations[i]
-                              , padding=(kernel_size - 1)*dialations[i] // 2)
+                    nn.utils.weight_norm(nn.Conv1d(in_channels, in_channels, kernel_size, 1, dilation=dialations[i]
+                              , padding=(kernel_size - 1)*dialations[i] // 2))
                 )
                 for i in range(nums)
             ]
@@ -61,9 +61,9 @@ class UpsampleNet(nn.Module):
         self.output_size = output_size
         self.upsample_factor = upsample_factor
 
-        self.layer = nn.ConvTranspose1d(input_size, output_size, upsample_factor * 2,
+        layer = nn.ConvTranspose1d(input_size, output_size, upsample_factor * 2,
                                    upsample_factor, padding=upsample_factor // 2)
-        # self.layer = weight_norm(layer)
+        self.layer = nn.utils.weight_norm(layer)
 
     def forward(self, inputs):
         outputs = self.layer(inputs)
@@ -79,7 +79,7 @@ class Generator(nn.Module):
         self.generator = nn.Sequential(
             nn.ReflectionPad1d(3),
             nn.LeakyReLU(0.2),
-            nn.Conv1d(in_channels, 512, kernel_size=7),
+            nn.utils.weight_norm(nn.Conv1d(in_channels, 512, kernel_size=7)),
             nn.LeakyReLU(0.2),
             UpsampleNet(512, 256, 8),
             MRF(256),
@@ -94,8 +94,8 @@ class Generator(nn.Module):
             MRF(32),
             nn.ReflectionPad1d(3),
             nn.LeakyReLU(0.2),
-            nn.Conv1d(32, 1, kernel_size=7),
-            nn.Tanh()
+            nn.utils.weight_norm(nn.Conv1d(32, 1, kernel_size=7)),
+            nn.Tanh(),
         )
 
     def num_params(self):
