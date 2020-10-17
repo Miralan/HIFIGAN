@@ -5,6 +5,8 @@ Currently training, I don't know if it is implemented correctly, just for fun!
 
 This project is mainly modified on the basis of (https://github.com/yanggeng1995/FB-MelGAN) by yanggeng1995 and the implementation of AdamW is copied from (https://github.com/mpyrozhok/adamwr/blob/master/adamw.py)
 
+There is something different from origin paper, I used STFT loss instead of Mel loss.
+
 ## Requirements
 - torch
 - numpy
