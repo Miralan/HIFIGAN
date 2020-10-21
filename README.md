@@ -1,5 +1,5 @@
 # HIFI-GAN
-A toy pytorch implementation of the HIFI-GAN V3(https://arxiv.org/pdf/2010.05646v1.pdf) 
+A toy pytorch implementation of the HIFI-GAN V1(https://arxiv.org/pdf/2010.05646v1.pdf) 
 
 Currently training, I don't know if it is implemented correctly, just for fun!
 
