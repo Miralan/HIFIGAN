@@ -5,7 +5,7 @@ import argparse
 import torch.nn as nn
 from utils.training import *
 from utils.logging import GetLogging
-from utils.audio import hop_length, Audio2Mel
+from utils.audio import hop_length
 from utils.optimizer import Optimizer
 from utils.adam import AdamW
 from utils.dataset import CustomerDataset, CustomerCollate
@@ -13,6 +13,7 @@ from utils.loss import MultiResolutionSTFTLoss
 from torch.utils.data import DataLoader
 from models.generator import Generator
 from models.discriminator import Discriminator
+from adabelief_pytorch import AdaBelief
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
@@ -28,21 +29,19 @@ def train(args):
 
     device = torch.device("cuda:0")
     generator, discriminator = create_model(args, Generator, Discriminator, hop_length)
-    cal_mel = Audio2Mel()
 
     if args.print_network:
         print(generator)
         print(discriminator)
 
     g_parameters = list(generator.parameters())
-    g_optimizer = AdamW(g_parameters, lr=args.g_learning_rate, betas=args.adamw_beta, weight_decay=args.adamw_weight_decay)
+    g_optimizer = AdaBelief(g_parameters, lr=args.g_learning_rate, betas=args.adamw_beta, weight_decay=args.adamw_weight_decay)
 
     d_parameters = list(discriminator.parameters())
-    d_optimizer = AdamW(d_parameters, lr=args.g_learning_rate, betas=args.adamw_beta, weight_decay=args.adamw_weight_decay)
+    d_optimizer = AdaBelief(d_parameters, lr=args.g_learning_rate, betas=args.adamw_beta, weight_decay=args.adamw_weight_decay)
 
     generator.to(device)
     discriminator.to(device)
-    cal_mel.to(device)
 
     global_step = 0
     global_epoch = 0
@@ -143,7 +142,7 @@ def train(args):
             # STFT Loss
             sc_loss, mag_loss = stft_criterion(g_outputs.squeeze(1), samples.squeeze(1))
             mel_loss = sc_loss + mag_loss
-            g_loss = adv_loss + 2 * fm_loss + 15 * mel_loss
+            g_loss = adv_loss + 2 * fm_loss + 10 * mel_loss
             custom_g_optimizer.zero_grad()
             g_loss.backward()
             nn.utils.clip_grad_norm_(g_parameters, max_norm=0.5)
@@ -183,11 +182,11 @@ def main():
     parser.add_argument('--checkpoint_step', type=int, default=5000)
     parser.add_argument('--use_cuda', type=_str_to_bool, default=True)
     parser.add_argument('--print_network', type=_str_to_bool, default=False)
-    parser.add_argument('--g_learning_rate', type=float, default=0.0004)
-    parser.add_argument('--d_learning_rate', type=float, default=0.0002)
+    parser.add_argument('--g_learning_rate', type=float, default=0.0008)
+    parser.add_argument('--d_learning_rate', type=float, default=0.0008)
     parser.add_argument('--decay_learning_rate', type=float, default=0.999)
-    parser.add_argument('--adamw_beta', type=float, default=(0.8, 0.99))
-    parser.add_argument('--adamw_weight_decay', type=float, default=0.01)
+    parser.add_argument('--adamw_beta', type=float, default=(0.9, 0.99))
+    parser.add_argument('--adamw_weight_decay', type=float, default=1e-12)
     parser.add_argument('--local_condition_dim', type=int, default=80)
     parser.add_argument('--batch_size', type=int, default=12)
     parser.add_argument('--condition_window', type=int, default=100)
