@@ -19,38 +19,38 @@ class MPD(nn.Module):
 
         self.conv_layers = nn.Sequential(
             nn.Sequential(
-                nn.utils.weight_norm(nn.Conv2d(1, 64, kernel_size=(5, 1), 
-                                               stride=(3, 1), padding=(4, 0))),
+                nn.utils.weight_norm(nn.Conv2d(1, 32, kernel_size=(5, 1), 
+                                               stride=(3, 1), padding=(2, 0))),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
-                nn.utils.weight_norm(nn.Conv2d(64, 128, kernel_size=(5, 1), 
-                                               stride=(3, 1), padding=(4, 0))),
+                nn.utils.weight_norm(nn.Conv2d(32, 128, kernel_size=(5, 1), 
+                                               stride=(3, 1), padding=(2, 0))),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
-                nn.utils.weight_norm(nn.Conv2d(128, 256, kernel_size=(5, 1), 
-                                               stride=(3, 1), padding=(4, 0))),
-                nn.LeakyReLU(0.2)
-            ),
-            nn.Sequential(
-                nn.utils.weight_norm(nn.Conv2d(256, 512, kernel_size=(5, 1), 
-                                               stride=(3, 1), padding=(4, 0))),
+                nn.utils.weight_norm(nn.Conv2d(128, 512, kernel_size=(5, 1), 
+                                               stride=(3, 1), padding=(2, 0))),
                 nn.LeakyReLU(0.2)
             ),
             nn.Sequential(
                 nn.utils.weight_norm(nn.Conv2d(512, 1024, kernel_size=(5, 1), 
-                                               stride=(1, 1), padding=(4, 0))),
+                                               stride=(1, 1), padding=(2, 0))),
+                nn.LeakyReLU(0.2)
+            ),
+            nn.Sequential(
+                nn.utils.weight_norm(nn.Conv2d(1024, 1024, kernel_size=(5, 1), 
+                                               stride=(3, 1), padding=(2, 0))),
                 nn.LeakyReLU(0.2)
             ),
             nn.utils.weight_norm(nn.Conv2d(1024, 1, kernel_size=(3, 1), 
-                                           stride=(1, 1), padding=(4, 0)))          
+                                           stride=(1, 1), padding=(1, 0)))          
         )
 
     def forward(self, inputs):
         x = self.pad(inputs)
         assert x.shape[-1] == self.p * self.len
-        x = x.reshape(x.shape[0], 1, self.p, self.len).permute(0, 1, 3, 2)
+        x = x.reshape(x.shape[0], 1, self.len, self.p)
         x = self.conv_layers(x)
         return x
 
